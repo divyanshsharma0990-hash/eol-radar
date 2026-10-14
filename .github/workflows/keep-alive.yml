@@ -1,0 +1,38 @@
+name: Keep Streamlit awake
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install playwright
+          playwright install --with-deps chromium
+      - name: Visit apps
+        run: |
+          python - <<'EOF'
+          from playwright.sync_api import sync_playwright
+          URLS = [
+              "https://div-cve-risk-calc.streamlit.app",
+              "https://vulnpulse-intel-app.streamlit.app",
+              "https://patchpilot.streamlit.app",
+              "https://eol-radar.streamlit.app",
+          ]
+          with sync_playwright() as p:
+              b = p.chromium.launch()
+              for url in URLS:
+                  page = b.new_page()
+                  page.goto(url, timeout=60000)
+                  btn = page.get_by_text("Yes, get this app back up!")
+                  if btn.count():
+                      btn.click()
+                  page.wait_for_timeout(15000)
+                  page.close()
+              b.close()
+          EOF
