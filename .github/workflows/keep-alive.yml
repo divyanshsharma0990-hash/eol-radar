@@ -1,4 +1,5 @@
 name: Keep Streamlit awake
+
 on:
   schedule:
     - cron: "0 */6 * * *"
@@ -7,38 +8,75 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: |
+
+      - name: Install Playwright
+        run: |
           pip install playwright
           playwright install --with-deps chromium
+
       - name: Visit apps
         run: |
           python - <<'EOF'
           from playwright.sync_api import sync_playwright
-          URLS = [
-    "https://div-cve-risk-calc.streamlit.app",
-    "https://vulnpulse-intel-app.streamlit.app",
-    "https://patchpilot.streamlit.app",
-    "https://eol-radar.streamlit.app",
-    "https://origynai.streamlit.app",
-    "https://exposurelens.streamlit.app",
-]
-          with sync_playwright() as p:
-              b = p.chromium.launch(headless=True)
-              for url in URLS:
-                  page = b.new_page()
-                  page.goto(url, timeout=60000)
-                  btn = page.get_by_role(
-    "button",
-    name="Yes, get this app back up!"
-)
 
-if btn.count() > 0:
-    btn.click()
-    page.wait_for_timeout(15000)
-                  page.close()
-              b.close()
+          URLS = [
+              "https://div-cve-risk-calc.streamlit.app",
+              "https://vulnpulse-intel-app.streamlit.app",
+              "https://patchpilot.streamlit.app",
+              "https://eol-radar.streamlit.app",
+              "https://origynai.streamlit.app",
+              "https://exposurelens.streamlit.app",
+          ]
+
+          failed = []
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+
+              for url in URLS:
+                  page = browser.new_page()
+
+                  try:
+                      print(f"Visiting: {url}")
+
+                      page.goto(
+                          url,
+                          timeout=60000,
+                          wait_until="domcontentloaded"
+                      )
+
+                      btn = page.get_by_role(
+                          "button",
+                          name="Yes, get this app back up!"
+                      )
+
+                      if btn.count() > 0:
+                          print("Waking up sleeping app...")
+                          btn.click()
+                          page.wait_for_timeout(15000)
+                      else:
+                          page.wait_for_timeout(5000)
+
+                      print(f"SUCCESS: {url}")
+
+                  except Exception as e:
+                      print(f"FAILED: {url} - {e}")
+                      failed.append(url)
+
+                  finally:
+                      page.close()
+
+              browser.close()
+
+          if failed:
+              print("Apps that failed:", failed)
+              raise SystemExit(1)
+
+          print("All six Streamlit apps visited successfully!")
+
           EOF
