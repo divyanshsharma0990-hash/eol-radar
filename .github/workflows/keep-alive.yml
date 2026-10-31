@@ -30,7 +30,8 @@ jobs:
               "https://patchpilot.streamlit.app",
               "https://eol-radar.streamlit.app",
               "https://origynai.streamlit.app",
-              "https://exposurelens.streamlit.app",
+              "https://exposurelens.streamlit.app"
+              ,
           ]
 
           failed = []
