@@ -19,13 +19,13 @@ jobs:
           python - <<'EOF'
           from playwright.sync_api import sync_playwright
           URLS = [
-              "https://div-cve-risk-calc.streamlit.app",
-              "https://vulnpulse-intel-app.streamlit.app",
-              "https://patchpilot.streamlit.app",
-              "https://eol-radar.streamlit.app",
-              "https://origynai.streamlit.app",
-              "https://exposurelens.streamlit.app",
-          ]
+    "https://div-cve-risk-calc.streamlit.app",
+    "https://vulnpulse-intel-app.streamlit.app",
+    "https://patchpilot.streamlit.app",
+    "https://eol-radar.streamlit.app",
+    "https://origynai.streamlit.app",
+    "https://exposurelens.streamlit.app",
+]
           with sync_playwright() as p:
               b = p.chromium.launch(headless=True)
               for url in URLS:
