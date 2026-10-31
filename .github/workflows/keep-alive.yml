@@ -8,8 +8,10 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/setup-python@v5
+      - name: Install Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -18,9 +20,9 @@ jobs:
           pip install playwright
           playwright install --with-deps chromium
 
-      - name: Visit apps
+      - name: Visit all Streamlit apps
         run: |
-          python - <<'EOF'
+          cat > keep_alive.py <<'PYTHON'
           from playwright.sync_api import sync_playwright
 
           URLS = [
@@ -37,29 +39,42 @@ jobs:
 
               for url in URLS:
                   page = browser.new_page()
-                  try:
-                      print(f"Visiting: {url}")
-                      page.goto(url, timeout=60000, wait_until="domcontentloaded")
 
-                      btn = page.get_by_role(
+                  try:
+                      print(f"\nVisiting: {url}")
+
+                      response = page.goto(
+                          url,
+                          timeout=90000,
+                          wait_until="domcontentloaded"
+                      )
+
+                      if response:
+                          print(f"HTTP status: {response.status}")
+
+                      button = page.get_by_role(
                           "button",
                           name="Yes, get this app back up!"
                       )
 
-                      if btn.count() > 0:
-                          btn.click()
-                          page.wait_for_timeout(15000)
+                      if button.count() > 0:
+                          print("Sleeping app detected. Waking it up...")
+                          button.click()
+                          page.wait_for_timeout(20000)
                       else:
+                          print("App loaded. No wake-up button found.")
                           page.wait_for_timeout(5000)
 
-                      print(f"SUCCESS: {url}")
+                      print(f"Completed: {url}")
 
-                  except Exception as e:
-                      print(f"FAILED: {url} - {e}")
+                  except Exception as error:
+                      print(f"ERROR visiting {url}: {error}")
 
                   finally:
                       page.close()
 
               browser.close()
 
-          EOF
+          PYTHON
+
+          python keep_alive.py
