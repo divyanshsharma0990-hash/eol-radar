@@ -8,10 +8,8 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Install Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -31,8 +29,7 @@ jobs:
               "https://patchpilot.streamlit.app",
               "https://eol-radar.streamlit.app",
               "https://origynai.streamlit.app",
-              "https://exposurelens.streamlit.app"
-               ,
+              "https://exposurelens.streamlit.app",
           ]
 
           with sync_playwright() as p:
@@ -40,31 +37,25 @@ jobs:
 
               for url in URLS:
                   page = browser.new_page()
-
                   try:
                       print(f"Visiting: {url}")
+                      page.goto(url, timeout=60000, wait_until="domcontentloaded")
 
-                      page.goto(
-                          url,
-                          timeout=60000,
-                          wait_until="domcontentloaded"
-                      )
-
-                      button = page.get_by_role(
+                      btn = page.get_by_role(
                           "button",
                           name="Yes, get this app back up!"
                       )
 
-                      if button.count() > 0:
-                          button.click()
+                      if btn.count() > 0:
+                          btn.click()
                           page.wait_for_timeout(15000)
                       else:
                           page.wait_for_timeout(5000)
 
                       print(f"SUCCESS: {url}")
 
-                  except Exception as error:
-                      print(f"FAILED: {url}: {error}")
+                  except Exception as e:
+                      print(f"FAILED: {url} - {e}")
 
                   finally:
                       page.close()
