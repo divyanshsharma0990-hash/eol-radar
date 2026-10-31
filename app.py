@@ -26,6 +26,7 @@ SUITE = [
     ("VulnPulse", "https://vulnpulse-intel-app.streamlit.app/", "fa-heart-pulse"),
     ("Risk Calc", "https://div-cve-risk-calc.streamlit.app/", "fa-calculator"),
     ("PatchPilot", "https://patchpilot.streamlit.app/", "fa-paper-plane"),
+    ("URL EXPOSURE", "https://exposurelens.streamlit.app/", "fa-satellite"),
 ]
 LINKEDIN = "https://www.linkedin.com/in/divyansh-sharma-8113b5113"
 
@@ -575,6 +576,7 @@ def show_single(product: str, version: str):
             ["Risk", esc(risk)], ["Action", esc(action)],
             ["Check CVEs", f'<a href="{SUITE[0][1]}" target="_blank">VulnPulse</a> for this product'],
             ["Score a CVE", f'<a href="{SUITE[1][1]}" target="_blank">Risk Calc</a>'],
+            ["Score a CVE", f'<a href="{SUITE[3][1]}" target="_blank">URL Exposure</a>'],
             ["Patch plan", f'<a href="{SUITE[2][1]}" target="_blank">PatchPilot</a>'
              + (" (no patch exists for EOL versions, use for the upgrade path)" if res[C_STATUS] == "EOL" else "")],
             ["Source", f'<a href="https://endoflife.date/{esc(res.get("_slug"))}" target="_blank">'
