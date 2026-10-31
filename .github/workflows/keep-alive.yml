@@ -24,7 +24,7 @@ jobs:
               "https://patchpilot.streamlit.app",
               "https://eol-radar.streamlit.app",
               "https://origynai.streamlit.app",
-              "https://exposurelens.streamlit.app/,
+              "https://exposurelens.streamlit.app",
           ]
           with sync_playwright() as p:
               b = p.chromium.launch()
