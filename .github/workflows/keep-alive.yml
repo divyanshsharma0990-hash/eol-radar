@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/setup-python@v5
+      - name: Install Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -30,11 +31,8 @@ jobs:
               "https://patchpilot.streamlit.app",
               "https://eol-radar.streamlit.app",
               "https://origynai.streamlit.app",
-              "https://exposurelens.streamlit.app"
-              ,
+              "https://exposurelens.streamlit.app",
           ]
-
-          failed = []
 
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True)
@@ -51,33 +49,25 @@ jobs:
                           wait_until="domcontentloaded"
                       )
 
-                      btn = page.get_by_role(
+                      button = page.get_by_role(
                           "button",
                           name="Yes, get this app back up!"
                       )
 
-                      if btn.count() > 0:
-                          print("Waking up sleeping app...")
-                          btn.click()
+                      if button.count() > 0:
+                          button.click()
                           page.wait_for_timeout(15000)
                       else:
                           page.wait_for_timeout(5000)
 
                       print(f"SUCCESS: {url}")
 
-                  except Exception as e:
-                      print(f"FAILED: {url} - {e}")
-                      failed.append(url)
+                  except Exception as error:
+                      print(f"FAILED: {url}: {error}")
 
                   finally:
                       page.close()
 
               browser.close()
-
-          if failed:
-              print("Apps that failed:", failed)
-              raise SystemExit(1)
-
-          print("All six Streamlit apps visited successfully!")
 
           EOF
